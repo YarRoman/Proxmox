@@ -681,7 +681,7 @@ ________________________________________________________________________________
 To create a new Proxmox EMQX LXC, run the following in the Proxmox Shell.
 
 ```yaml
- bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/emqx-v4.sh)"
+ bash -c "$(wget -qLO - https://github.com/YarRoman/Proxmox/raw/feature/insternet_checking_error/ct/emqx-v4.sh)"
 ```
 <h3 align="center" id="heading">⚡ Default Settings:  1GB RAM - 4GB Storage - 2vCPU ⚡</h3>
 
