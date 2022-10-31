@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-YW=`echo "\033[33m"`
-RD=`echo "\033[01;31m"`
-BL=`echo "\033[36m"`
-GN=`echo "\033[1;92m"`
-CL=`echo "\033[m"`
+YW=$(echo "\033[33m")
+RD=$(echo "\033[01;31m")
+BL=$(echo "\033[36m")
+GN=$(echo "\033[1;92m")
+CL=$(echo "\033[m")
 RETRY_NUM=10
 RETRY_EVERY=3
 NUM=$RETRY_NUM
@@ -29,29 +29,28 @@ function error_exit() {
 }
 
 function msg_info() {
-    local msg="$1"
-    echo -ne " ${HOLD} ${YW}${msg}..."
+  local msg="$1"
+  echo -ne " ${HOLD} ${YW}${msg}..."
 }
 
 function msg_ok() {
-    local msg="$1"
-    echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
+  local msg="$1"
+  echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
 function msg_error() {
-    local msg="$1"
-    echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
+  local msg="$1"
+  echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
 }
 
 msg_info "Setting up Container OS "
 sed -i "/$LANG/ s/\(^# \)//" /etc/locale.gen
 locale-gen >/dev/null
 while [ "$(hostname -I)" = "" ]; do
-  1>&2 echo -en "${CROSS}${RD} No Network! "
+  echo 1>&2 -en "${CROSS}${RD} No Network! "
   sleep $RETRY_EVERY
   ((NUM--))
-  if [ $NUM -eq 0 ]
-  then
-    1>&2 echo -e "${CROSS}${RD} No Network After $RETRY_NUM Tries${CL}"    
+  if [ $NUM -eq 0 ]; then
+    echo 1>&2 -e "${CROSS}${RD} No Network After $RETRY_NUM Tries${CL}"
     exit 1
   fi
 done
@@ -74,26 +73,26 @@ msg_ok "Installed Dependencies"
 msg_info "Installing EMQX"
 curl -s https://packagecloud.io/install/repositories/emqx/emqx/script.deb.sh | bash &>/dev/null
 sudo apt-get install -y emqx >/dev/null
-systemctl start emqx
+systemctl enable --now emqx
 msg_ok "Installed EMQX"
 
-PASS=$(grep -w "root" /etc/shadow | cut -b6);
-  if [[ $PASS != $ ]]; then
-msg_info "Customizing Container"
-chmod -x /etc/update-motd.d/*
-touch ~/.hushlogin
-GETTY_OVERRIDE="/etc/systemd/system/container-getty@1.service.d/override.conf"
-mkdir -p $(dirname $GETTY_OVERRIDE)
-cat << EOF > $GETTY_OVERRIDE
+PASS=$(grep -w "root" /etc/shadow | cut -b6)
+if [[ $PASS != $ ]]; then
+  msg_info "Customizing Container"
+  chmod -x /etc/update-motd.d/*
+  touch ~/.hushlogin
+  GETTY_OVERRIDE="/etc/systemd/system/container-getty@1.service.d/override.conf"
+  mkdir -p $(dirname $GETTY_OVERRIDE)
+  cat <<EOF >$GETTY_OVERRIDE
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud tty%I 115200,38400,9600 \$TERM
 EOF
-systemctl daemon-reload
-systemctl restart $(basename $(dirname $GETTY_OVERRIDE) | sed 's/\.d//')
-msg_ok "Customized Container"
-  fi
-  
+  systemctl daemon-reload
+  systemctl restart $(basename $(dirname $GETTY_OVERRIDE) | sed 's/\.d//')
+  msg_ok "Customized Container"
+fi
+
 msg_info "Cleaning up"
 apt-get autoremove >/dev/null
 apt-get autoclean >/dev/null
