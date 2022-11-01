@@ -1225,7 +1225,7 @@ ________________________________________________________________________________
 <details>
 <summary markdown="span"> Docker LXC </summary>
  
-<p align="center"><img src="https://raw.githubusercontent.com/tteck/Proxmox/main/misc/images/docker.png" height="100"/></p>
+<p align="center"><img src="https://raw.githubusercontent.com/YarRoman/Proxmox/feature/insternet_checking_error/misc/images/docker.png" height="100"/></p>
 
 <h1 align="center" id="heading"> Docker LXC </h1>
 <h3 align="center"> Options to Install Portainer and/or Docker Compose V2</h3>
