@@ -37,7 +37,6 @@ function msg_ok() {
   local msg="$1"
   echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
-
 function msg_error() {
   local msg="$1"
   echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
@@ -81,55 +80,104 @@ apt-get -y upgrade &>/dev/null
 msg_ok "Updated Container OS"
 
 msg_info "Installing Dependencies"
-apt-get install -y curl &>/dev/null
-apt-get install -y sudo &>/dev/null
-apt-get install -y apt-transport-https &>/dev/null
-apt-get install -y software-properties-common &>/dev/null
+apt-get -y install software-properties-common apt-utils &>/dev/null
+apt-get -y update &>/dev/null
+apt-get -y upgrade &>/dev/null
+apt-get -y install \
+    build-essential \
+    gcc \
+    gir1.2-gtk-3.0 \
+    libcairo2-dev \
+    libgirepository1.0-dev \
+    libglib2.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    libopenjp2-7 \
+    libpango1.0-dev \
+    librsvg2-dev \
+    pkg-config \
+    curl \
+    sudo &>/dev/null
 msg_ok "Installed Dependencies"
 
-if [[ -z "$(grep -w "100000" /proc/self/uid_map)" ]]; then
-  msg_info "Setting Up Hardware Acceleration"
-  apt-get -y install \
-    va-driver-all \
-    ocl-icd-libopencl1 \
-    beignet-opencl-icd &>/dev/null
+msg_info "Installing GStreamer"
+apt-get -y install \
+    gstreamer1.0-tools \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-alsa &>/dev/null
+msg_ok "Installed GStreamer"
 
-  /bin/chgrp video /dev/dri
-  /bin/chmod 755 /dev/dri
-  /bin/chmod 660 /dev/dri/*
-  msg_ok "Set Up Hardware Acceleration"
+msg_info "Setting up Node.js Repository"
+curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &>/dev/null
+msg_ok "Set up Node.js Repository"
+
+msg_info "Installing Node.js"
+apt-get install -y nodejs &>/dev/null
+msg_ok "Installed Node.js"
+
+msg_info "Installing Python3"
+apt-get -y install \
+    python3 \
+    python3-dev \
+    python3-gi \
+    python3-gst-1.0 \
+    python3-matplotlib \
+    python3-numpy \
+    python3-opencv \
+    python3-pil \
+    python3-pip \
+    python3-setuptools \
+    python3-skimage \
+    python3-wheel &>/dev/null
+python3 -m pip install --upgrade pip &>/dev/null
+python3 -m pip install aiofiles debugpy typing_extensions typing &>/dev/null
+msg_ok "Installed Python3"
+
+read -r -p "Would you like to add Coral Edge TPU support? <y/N> " prompt
+if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]; then
+  CORAL="Y"
+else
+  CORAL="N"
 fi
 
-msg_info "Setting Up Jellyfin Repository"
-sudo add-apt-repository universe -y &>/dev/null
-wget -q -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key add - &>/dev/null
-echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu $(lsb_release -c -s) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &>/dev/null
-msg_ok "Set Up Jellyfin Repository"
+if [[ $CORAL == "Y" ]]; then
+msg_info "Adding Coral Edge TPU Support"
+echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | tee /etc/apt/sources.list.d/coral-edgetpu.list &>/dev/null
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &>/dev/null
+apt-get -y update &>/dev/null
+apt-get -y install libedgetpu1-std &>/dev/null
+msg_ok "Coral Edge TPU Support Added"
+fi
 
-msg_info "Installing Jellyfin"
-apt-get update &>/dev/null
-sudo apt install jellyfin-server -y &>/dev/null
-apt install jellyfin-ffmpeg -y &>/dev/null
-msg_ok "Installed Jellyfin"
+msg_info "Installing Scrypted"
+sudo -u root npx -y scrypted@latest install-server &>/dev/null
+msg_info "Installed Scrypted"
 
 msg_info "Creating Service"
-cat <<'EOF' >/lib/systemd/system/jellyfin.service
-[Unit]
-Description = Jellyfin Media Server
-After = network.target
-[Service]
-Type = simple
-EnvironmentFile = /etc/default/jellyfin
-User = root
-ExecStart = /usr/bin/jellyfin
-Restart = on-failure
-TimeoutSec = 15
-[Install]
-WantedBy = multi-user.target
-EOF
-ln -s /usr/share/jellyfin/web/ /usr/lib/jellyfin/bin/jellyfin-web
-msg_ok "Created Service"
+service_path="/etc/systemd/system/scrypted.service"
+echo "[Unit]
+Description=Scrypted service
+After=network.target
 
+[Service]
+User=root
+Group=root
+Type=simple
+ExecStart=/usr/bin/npx -y scrypted serve
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target" >$service_path
+systemctl enable --now scrypted.service &>/dev/null
+msg_ok "Created Service"
 PASS=$(grep -w "root" /etc/shadow | cut -b6)
 if [[ $PASS != $ ]]; then
   msg_info "Customizing Container"

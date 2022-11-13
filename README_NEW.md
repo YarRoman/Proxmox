@@ -2192,7 +2192,7 @@ ________________________________________________________________________________
 To create a new Proxmox Heimdall Dashboard LXC, run the following in the Proxmox Shell.
 
 ```yaml
-bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/heimdalldashboard-v4.sh)"
+bash -c "$(wget -qLO - https://github.com/YarRoman/Proxmox/raw/feature/insternet_checking_error/ct/heimdalldashboard-v4.sh)"
 ```
 <h3 align="center" id="heading">⚡ Default Settings:  512MiB RAM - 2GB Storage - 1vCPU ⚡</h3>
  
@@ -2221,7 +2221,7 @@ ________________________________________________________________________________
 To create a new Proxmox Homepage LXC, run the following in the Proxmox Shell.
 
 ```
-bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/homepage-v4.sh)"
+bash -c "$(wget -qLO - https://github.com/YarRoman/Proxmox/raw/feature/insternet_checking_error/ct/homepage-v4.sh)"
 ```
 
 <h3 align="center" id="heading">⚡ Default Settings:  1GB RAM - 3GB Storage - 2vCPU ⚡</h3>
@@ -2253,7 +2253,7 @@ Dashy helps you organize your self-hosted services by making them accessible fro
 To create a new Proxmox Dashy LXC, run the following in the Proxmox Shell.
 
 ```yaml
-bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/dashy-v4.sh)"
+bash -c "$(wget -qLO - https://github.com/YarRoman/Proxmox/raw/feature/insternet_checking_error/ct/dashy-v4.sh)"
 ```
 <h3 align="center" id="heading">⚡ Default Settings:  2GB RAM - 3GB Storage - 2vCPU ⚡</h3>
  

@@ -3,11 +3,34 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2022-11-13
+
+### Changed
+
+- **All LXC's** 
+  - Add option to continue upon Internet NOT Connected
+
+## 2022-11-11
+
+### Changed
+
+- **HA Bluetooth Integration Preparation** 
+  - [NEW Script](https://github.com/tteck/Proxmox/discussions/719)
+
+## 2022-11-04
+
+### Changed
+
+- **Scrypted LXC** 
+  - NEW Script
+
 ## 2022-11-01
 
 ### Changed
 
 - **Alpine LXC** 
+  - NEW Script
+- **Arch LXC** 
   - NEW Script
 
 ## 2022-10-27
@@ -15,7 +38,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - **Container & Core Restore from Backup** 
-  - NEW Scripts https://github.com/tteck/Proxmox/discussions/674
+  - [NEW Scripts](https://github.com/tteck/Proxmox/discussions/674)
 
 ## 2022-10-07
 

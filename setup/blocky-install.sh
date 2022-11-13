@@ -61,7 +61,13 @@ set +e
 alias die=''
 if nc -zw1 8.8.8.8 443; then msg_ok "Internet Connected"; else
   msg_error "Internet NOT Connected"
-  exit 1
+    read -r -p "Would you like to continue anyway? <y/N> " prompt
+    if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]; then
+      echo -e " ⚠️  ${RD}Expect Issues Without Internet${CL}"
+    else
+      echo -e " 🖧  Check Network Settings"
+      exit 1
+    fi
 fi
 RESOLVEDIP=$(nslookup "github.com" | awk -F':' '/^Address: / { matched = 1 } matched { print $2}' | xargs)
 if [[ -z "$RESOLVEDIP" ]]; then msg_error "DNS Lookup Failure"; else msg_ok "DNS Resolved github.com to $RESOLVEDIP"; fi
@@ -84,7 +90,7 @@ systemctl disable systemd-resolved.service &>/dev/null
 RELEASE=$(curl -s https://api.github.com/repos/0xERR0R/blocky/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
 wget https://github.com/0xERR0R/blocky/releases/download/v$RELEASE/blocky_${RELEASE}_Linux_x86_64.tar.gz &>/dev/null
 mkdir -p /opt/blocky
-tar -xf blocky_0.19_Linux_x86_64.tar.gz -C /opt/blocky
+tar -xf blocky_${RELEASE}_Linux_x86_64.tar.gz -C /opt/blocky
 rm -rf blocky_${RELEASE}_Linux_x86_64.tar.gz
 cat <<EOF >/opt/blocky/config.yml
 upstream:

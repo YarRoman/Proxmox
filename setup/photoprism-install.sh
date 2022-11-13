@@ -63,7 +63,13 @@ set +e
 alias die=''
 if nc -zw1 8.8.8.8 443; then msg_ok "Internet Connected"; else
   msg_error "Internet NOT Connected"
-  exit 1
+    read -r -p "Would you like to continue anyway? <y/N> " prompt
+    if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]; then
+      echo -e " ⚠️  ${RD}Expect Issues Without Internet${CL}"
+    else
+      echo -e " 🖧  Check Network Settings"
+      exit 1
+    fi
 fi
 RESOLVEDIP=$(nslookup "github.com" | awk -F':' '/^Address: / { matched = 1 } matched { print $2}' | xargs)
 if [[ -z "$RESOLVEDIP" ]]; then msg_error "DNS Lookup Failure"; else msg_ok "DNS Resolved github.com to $RESOLVEDIP"; fi
@@ -98,8 +104,8 @@ apt-get install -y nodejs &>/dev/null
 msg_ok "Installed Node.js"
 
 msg_info "Installing Golang (Patience)"
-wget https://golang.org/dl/go1.19.2.linux-amd64.tar.gz &>/dev/null
-tar -xzf go1.19.2.linux-amd64.tar.gz -C /usr/local &>/dev/null
+wget https://golang.org/dl/go1.19.3.linux-amd64.tar.gz &>/dev/null
+tar -xzf go1.19.3.linux-amd64.tar.gz -C /usr/local &>/dev/null
 ln -s /usr/local/go/bin/go /usr/local/bin/go &>/dev/null
 go install github.com/tianon/gosu@latest &>/dev/null
 go install golang.org/x/tools/cmd/goimports@latest &>/dev/null
@@ -139,7 +145,7 @@ msg_ok "Cloned PhotoPrism"
 msg_info "Building PhotoPrism (Patience)"
 NODE_OPTIONS=--max_old_space_size=2048 make all &>/dev/null
 ./scripts/build.sh prod /opt/photoprism/bin/photoprism &>/dev/null
-cp -a assets/ /opt/photoprism/assets/ &>/dev/null
+cp -r assets/ /opt/photoprism/ &>/dev/null
 msg_ok "Built PhotoPrism"
 
 env_path="/var/lib/photoprism/.env"
@@ -196,7 +202,7 @@ apt-get autoremove >/dev/null
 apt-get autoclean >/dev/null
 rm -rf /var/{cache,log}/* \
   /photoprism \
-  /go1.19.2.linux-amd64.tar.gz \
+  /go1.19.3.linux-amd64.tar.gz \
   /libtensorflow-linux-avx2-1.15.2.tar.gz \
   /libtensorflow-linux-avx-1.15.2.tar.gz \
   /libtensorflow-linux-cpu-1.15.2.tar.gz

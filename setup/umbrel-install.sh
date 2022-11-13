@@ -62,7 +62,13 @@ set +e
 alias die=''
 if nc -zw1 8.8.8.8 443; then msg_ok "Internet Connected"; else
   msg_error "Internet NOT Connected"
-  exit 1
+    read -r -p "Would you like to continue anyway? <y/N> " prompt
+    if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]; then
+      echo -e " ⚠️  ${RD}Expect Issues Without Internet${CL}"
+    else
+      echo -e " 🖧  Check Network Settings"
+      exit 1
+    fi
 fi
 RESOLVEDIP=$(nslookup "github.com" | awk -F':' '/^Address: / { matched = 1 } matched { print $2}' | xargs)
 if [[ -z "$RESOLVEDIP" ]]; then msg_error "DNS Lookup Failure"; else msg_ok "DNS Resolved github.com to $RESOLVEDIP"; fi
@@ -89,6 +95,8 @@ EOF
 
 msg_info "Installing Umbrel (Patience)"
 curl -sL https://umbrel.sh | bash &>/dev/null
+systemctl daemon-reload
+systemctl enable --now umbrel-startup.service &>/dev/null
 msg_ok "Installed Umbrel"
 
 PASS=$(grep -w "root" /etc/shadow | cut -b6)
@@ -108,7 +116,6 @@ EOF
   systemctl restart $(basename $(dirname $GETTY_OVERRIDE) | sed 's/\.d//')
   msg_ok "Customized Container"
 fi
-
 msg_info "Cleaning up"
 apt-get autoremove >/dev/null
 apt-get autoclean >/dev/null

@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 echo -e "Loading..."
-APP="Zwave-JS-UI"
-var_disk="4"
-var_cpu="2"
-var_ram="1024"
-var_os="debian"
-var_version="11"
+APP="Arch Linux"
+var_disk="1"
+var_cpu="1"
+var_ram="512"
+var_os="archlinux"
+var_version="base"
 NSAPP=$(echo ${APP,,} | tr -d ' ')
-var_install="${NSAPP}-install"
 NEXTID=$(pvesh get /cluster/nextid)
 INTEGER='^[0-9]+$'
 YW=$(echo "\033[33m")
@@ -44,12 +43,12 @@ else
 fi
 function header_info {
   cat <<"EOF"
- _____                                  _______    __  ______
-/__  /_      ______ __v4 _____         / / ___/   / / / /  _/
-  / /| | /| / / __ `/ | / / _ \   __  / /\__ \   / / / // /  
- / /_| |/ |/ / /_/ /| |/ /  __/  / /_/ /___/ /  / /_/ // /   
-/____/__/|__/\__,_/ |___/\___/   \____//____/   \____/___/   
-                                                             
+    ___              __       __    _                 
+   /   |  __________/ /_ v4  / /   (_)___  __  ___  __
+  / /| | / ___/ ___/ __ \   / /   / / __ \/ / / / |/_/
+ / ___ |/ /  / /__/ / / /  / /___/ / / / / /_/ />  <  
+/_/  |_/_/   \___/_/ /_/  /_____/_/_/ /_/\__,_/_/|_|  
+                                                      
 EOF
 }
 function msg_info() {
@@ -70,10 +69,10 @@ function PVE_CHECK() {
   fi
 }
 function default_settings() {
-  echo -e "${DGN}Using Container Type: ${BGN}Privileged${CL}"
-  CT_TYPE="0"
-  echo -e "${DGN}Using Root Password: ${BGN}Automatic Login${CL}"
-  PW=""
+  echo -e "${DGN}Using Container Type: ${BGN}Unprivileged${CL} ${RD}NO DEVICE PASSTHROUGH${CL}"
+  CT_TYPE="1"
+  echo -e "${DGN}Using Root Password: ${BGN}archlinux${CL}"
+  PW="-password archlinux"
   echo -e "${DGN}Using Container ID: ${BGN}$NEXTID${CL}"
   CT_ID=$NEXTID
   echo -e "${DGN}Using Hostname: ${BGN}$NSAPP${CL}"
@@ -98,8 +97,8 @@ function default_settings() {
 }
 function advanced_settings() {
   CT_TYPE=$(whiptail --title "CONTAINER TYPE" --radiolist --cancel-button Exit-Script "Choose Type" 8 58 2 \
-    "1" "Unprivileged" OFF \
-    "0" "Privileged" ON \
+    "1" "Unprivileged" ON \
+    "0" "Privileged" OFF \
     3>&1 1>&2 2>&3)
   exitstatus=$?
   if [ $exitstatus = 0 ]; then
@@ -109,7 +108,7 @@ function advanced_settings() {
   exitstatus=$?
   if [ $exitstatus = 0 ]; then
     if [ -z $PW1 ]; then
-      PW1="Automatic Login" PW=" "
+      PW1="archlinux" PW="-password $PW1"
       echo -e "${DGN}Using Root Password: ${BGN}$PW1${CL}"
     else
       PW="-password $PW1"
@@ -256,28 +255,11 @@ export PCT_OPTIONS="
   $PW
 "
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/tteck/Proxmox/main/ct/create_lxc.sh)" || exit
-if [ "$CT_TYPE" == "0" ]; then
-  LXC_CONFIG=/etc/pve/lxc/${CTID}.conf
-  cat <<EOF >>$LXC_CONFIG
-lxc.cgroup2.devices.allow: a
-lxc.cap.drop:
-lxc.cgroup2.devices.allow: c 188:* rwm
-lxc.cgroup2.devices.allow: c 189:* rwm
-lxc.mount.entry: /dev/serial/by-id  dev/serial/by-id  none bind,optional,create=dir
-lxc.mount.entry: /dev/ttyUSB0       dev/ttyUSB0       none bind,optional,create=file
-lxc.mount.entry: /dev/ttyUSB1       dev/ttyUSB1       none bind,optional,create=file
-lxc.mount.entry: /dev/ttyACM0       dev/ttyACM0       none bind,optional,create=file
-lxc.mount.entry: /dev/ttyACM1       dev/ttyACM1       none bind,optional,create=file
-EOF
-fi
 msg_info "Starting LXC Container"
 pct start $CTID
 msg_ok "Started LXC Container"
-lxc-attach -n $CTID -- bash -c "$(wget -qLO - https://raw.githubusercontent.com/tteck/Proxmox/main/setup/$var_install.sh)" || exit
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
-pct set $CTID -description "# ${APP} LXC
+pct set $CTID -description "# ${APP} ${var_version} LXC
 ### https://tteck.github.io/Proxmox/
 <a href='https://ko-fi.com/D1D7EP4GF'><img src='https://img.shields.io/badge/☕-Buy me a coffee-red' /></a>"
 msg_ok "Completed Successfully!\n"
-echo -e "${APP} should be reachable by going to the following URL.
-         ${BL}http://${IP}:8091${CL} \n"

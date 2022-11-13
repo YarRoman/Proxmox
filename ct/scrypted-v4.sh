@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 echo -e "Loading..."
-APP="Zwave-JS-UI"
-var_disk="4"
+APP="Scrypted"
+var_disk="8"
 var_cpu="2"
-var_ram="1024"
+var_ram="2048"
 var_os="debian"
 var_version="11"
 NSAPP=$(echo ${APP,,} | tr -d ' ')
@@ -44,12 +44,12 @@ else
 fi
 function header_info {
   cat <<"EOF"
- _____                                  _______    __  ______
-/__  /_      ______ __v4 _____         / / ___/   / / / /  _/
-  / /| | /| / / __ `/ | / / _ \   __  / /\__ \   / / / // /  
- / /_| |/ |/ / /_/ /| |/ /  __/  / /_/ /___/ /  / /_/ // /   
-/____/__/|__/\__,_/ |___/\___/   \____//____/   \____/___/   
-                                                             
+   _____                       __           __
+  / ___/____________v4______  / /____  ____/ /
+  \__ \/ ___/ ___/ / / / __ \/ __/ _ \/ __  / 
+ ___/ / /__/ /  / /_/ / /_/ / /_/  __/ /_/ /  
+/____/\___/_/   \__, / .___/\__/\___/\__,_/   
+               /____/_/                       
 EOF
 }
 function msg_info() {
@@ -70,8 +70,8 @@ function PVE_CHECK() {
   fi
 }
 function default_settings() {
-  echo -e "${DGN}Using Container Type: ${BGN}Privileged${CL}"
-  CT_TYPE="0"
+  echo -e "${DGN}Using Container Type: ${BGN}Unprivileged${CL} ${RD}NO DEVICE PASSTHROUGH${CL}"
+  CT_TYPE="1"
   echo -e "${DGN}Using Root Password: ${BGN}Automatic Login${CL}"
   PW=""
   echo -e "${DGN}Using Container ID: ${BGN}$NEXTID${CL}"
@@ -98,8 +98,8 @@ function default_settings() {
 }
 function advanced_settings() {
   CT_TYPE=$(whiptail --title "CONTAINER TYPE" --radiolist --cancel-button Exit-Script "Choose Type" 8 58 2 \
-    "1" "Unprivileged" OFF \
-    "0" "Privileged" ON \
+    "1" "Unprivileged" ON \
+    "0" "Privileged" OFF \
     3>&1 1>&2 2>&3)
   exitstatus=$?
   if [ $exitstatus = 0 ]; then
@@ -280,4 +280,4 @@ pct set $CTID -description "# ${APP} LXC
 <a href='https://ko-fi.com/D1D7EP4GF'><img src='https://img.shields.io/badge/☕-Buy me a coffee-red' /></a>"
 msg_ok "Completed Successfully!\n"
 echo -e "${APP} should be reachable by going to the following URL.
-         ${BL}http://${IP}:8091${CL} \n"
+         ${BL}https://${IP}:10443${CL} \n"

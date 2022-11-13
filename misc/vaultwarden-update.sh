@@ -22,7 +22,7 @@ ${CL}"
 
 update_info
 while true; do
-    read -p "This will Update Vaultwarden to $VAULT (set 2vCPU 2048MiB RAM Min.). Proceed(y/n)?" yn
+    read -p "This will Update Vaultwarden to $VAULT (set 2vCPU 3072MiB RAM Min.). Proceed(y/n)?" yn
     case $yn in
     [Yy]*) break ;;
     [Nn]*) exit ;;
@@ -38,8 +38,12 @@ echo -e "${GN} Updating (Building) to ${VAULT} (Patience)... ${CL}"
 git clone https://github.com/dani-garcia/vaultwarden &>/dev/null
 cd vaultwarden
 cargo build --features "sqlite,mysql,postgresql" --release &>/dev/null
-cp target/release/vaultwarden /opt/vaultwarden/bin/
-
+DIR=/usr/bin/vaultwarden
+if [ -d "$DIR" ]; then
+    cp target/release/vaultwarden /usr/bin/
+else
+    cp target/release/vaultwarden /opt/vaultwarden/bin/
+fi
 echo -e "${GN} Starting Vaultwarden ${VAULT}... ${CL}"
 systemctl start vaultwarden.service
 sleep 1
